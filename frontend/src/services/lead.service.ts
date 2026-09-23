@@ -46,7 +46,8 @@ function toLead(raw: RawLead): Lead {
 export const leadService = {
   async list(params: ListLeadsParams = {}): Promise<PaginatedLeads> {
     const searchParams = new URLSearchParams()
-    if (params.search) searchParams.set('search', params.search)
+    const search = params.search?.trim()
+    if (search) searchParams.set('search', search)
     if (params.status && params.status !== 'All statuses') searchParams.set('status', params.status)
     if (params.page) searchParams.set('page', String(params.page))
     if (params.limit) searchParams.set('limit', String(params.limit))

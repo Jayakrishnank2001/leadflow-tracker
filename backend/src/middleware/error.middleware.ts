@@ -1,9 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import { HttpError } from '../validators/lead.validator.js'
 
-// Re-export so services/controllers can import HttpError from one place.
-export { HttpError }
-
 interface MongooseValidationError extends Error {
   name: 'ValidationError'
 }
@@ -35,7 +32,6 @@ export function errorMiddleware(
   error: unknown,
   _req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ): void {
   if (error instanceof HttpError) {

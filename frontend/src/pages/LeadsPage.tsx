@@ -53,7 +53,7 @@ export function LeadsPage({ pageSize = 5 }: LeadsPageProps) {
     [filter, page, pageSize],
   )
 
-  // Simple debounce: wait 350ms after the last keystroke before hitting the API.
+  // Debounce: wait for a pause in typing before hitting the API.
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchLeads(search)

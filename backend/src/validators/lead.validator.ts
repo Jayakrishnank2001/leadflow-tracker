@@ -23,7 +23,6 @@ function isLeadStatus(value: unknown): value is LeadStatus {
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // Digits with optional spaces, dashes, parentheses, and a single leading +.
-// Letters are never allowed — "phone accepts characters" bug fix.
 const PHONE_PATTERN = /^\+?[0-9\s\-()]+$/
 
 function phoneDigitCount(phone: string): number {
@@ -114,8 +113,7 @@ export function validateStatusUpdate(body: unknown): { status: LeadStatus } {
   return { status }
 }
 
-// Declared here to avoid a validators -> middleware import cycle;
-// re-exported from the error middleware so both stay in sync.
+// Declared here (rather than in the middleware) to avoid a validators → middleware import cycle.
 export class HttpError extends Error {
   statusCode: number
   errors?: Record<string, string>
