@@ -39,3 +39,12 @@ export async function updateLeadStatusHandler(
     next(error)
   }
 }
+
+export async function deleteLeadHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await leadService.deleteLead(req.params.id)
+    res.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+}

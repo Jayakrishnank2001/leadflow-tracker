@@ -22,6 +22,14 @@ function isLeadStatus(value: unknown): value is LeadStatus {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// Digits with optional spaces, dashes, parentheses, and a single leading +.
+// Letters are never allowed — "phone accepts characters" bug fix.
+const PHONE_PATTERN = /^\+?[0-9\s\-()]+$/
+
+function phoneDigitCount(phone: string): number {
+  return phone.replace(/\D/g, '').length
+}
+
 /** Validate POST /api/leads body. Returns sanitized input or throws HttpError. */
 export function validateCreateLead(body: unknown): CreateLeadInput {
   if (typeof body !== 'object' || body === null) {
@@ -29,23 +37,27 @@ export function validateCreateLead(body: unknown): CreateLeadInput {
   }
 
   const { name, email, phone, status } = body as Record<string, unknown>
-  const errors: string[] = []
+  const errors: Record<string, string> = {}
 
   if (typeof name !== 'string' || name.trim().length === 0) {
-    errors.push('name is required')
+    errors.name = 'Name is required'
   }
   if (typeof email !== 'string' || !EMAIL_PATTERN.test(email.trim())) {
-    errors.push('email must be a valid email address')
+    errors.email = 'Enter a valid email address'
   }
   if (typeof phone !== 'string' || phone.trim().length === 0) {
-    errors.push('phone is required')
+    errors.phone = 'Phone is required'
+  } else if (!PHONE_PATTERN.test(phone.trim())) {
+    errors.phone = 'Phone must contain only numbers, spaces, dashes, parentheses, and an optional leading +'
+  } else if (phoneDigitCount(phone) < 7 || phoneDigitCount(phone) > 15) {
+    errors.phone = 'Phone must contain between 7 and 15 digits'
   }
   if (status !== undefined && !isLeadStatus(status)) {
-    errors.push(`status must be one of: ${LEAD_STATUSES.join(', ')}`)
+    errors.status = `Status must be one of: ${LEAD_STATUSES.join(', ')}`
   }
 
-  if (errors.length > 0) {
-    throw new HttpError(400, errors.join('; '))
+  if (Object.keys(errors).length > 0) {
+    throw new HttpError(400, 'Please fix the highlighted fields', errors)
   }
 
   return {
@@ -106,9 +118,11 @@ export function validateStatusUpdate(body: unknown): { status: LeadStatus } {
 // re-exported from the error middleware so both stay in sync.
 export class HttpError extends Error {
   statusCode: number
+  errors?: Record<string, string>
 
-  constructor(statusCode: number, message: string) {
+  constructor(statusCode: number, message: string, errors?: Record<string, string>) {
     super(message)
     this.statusCode = statusCode
+    this.errors = errors
   }
 }

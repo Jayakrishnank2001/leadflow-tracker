@@ -18,10 +18,33 @@ export interface ListLeadsParams {
   limit?: number
 }
 
-// NOTE: Not wired to any component yet — used in the next step when we
-// connect the UI to the backend APIs.
+interface RawLead {
+  _id: string
+  name: string
+  email: string
+  phone: string
+  status: LeadStatus
+  createdAt: string
+  updatedAt: string
+}
+
+interface RawPaginatedLeads {
+  data: RawLead[]
+  pagination: PaginatedLeads['pagination']
+}
+
+/** Backend returns Mongo `_id`; UI keys rows by `id`. Normalize once here. */
+function toLead(raw: RawLead): Lead {
+  const createdAt = new Date(raw.createdAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  return { ...raw, id: raw._id, createdAt }
+}
+
 export const leadService = {
-  list(params: ListLeadsParams = {}): Promise<PaginatedLeads> {
+  async list(params: ListLeadsParams = {}): Promise<PaginatedLeads> {
     const searchParams = new URLSearchParams()
     if (params.search) searchParams.set('search', params.search)
     if (params.status && params.status !== 'All statuses') searchParams.set('status', params.status)
@@ -29,14 +52,21 @@ export const leadService = {
     if (params.limit) searchParams.set('limit', String(params.limit))
 
     const query = searchParams.toString()
-    return api.get<PaginatedLeads>(`/api/leads${query ? `?${query}` : ''}`)
+    const result = await api.get<RawPaginatedLeads>(`/api/leads${query ? `?${query}` : ''}`)
+    return { ...result, data: result.data.map(toLead) }
   },
 
-  create(input: CreateLeadInput): Promise<Lead> {
-    return api.post<Lead>('/api/leads', input)
+  async create(input: CreateLeadInput): Promise<Lead> {
+    const raw = await api.post<RawLead>('/api/leads', input)
+    return toLead(raw)
   },
 
-  updateStatus(id: Lead['id'], status: LeadStatus): Promise<Lead> {
-    return api.patch<Lead>(`/api/leads/${id}/status`, { status })
+  async updateStatus(id: Lead['id'], status: LeadStatus): Promise<Lead> {
+    const raw = await api.patch<RawLead>(`/api/leads/${id}/status`, { status })
+    return toLead(raw)
+  },
+
+  async remove(id: Lead['id']): Promise<void> {
+    await api.del<void>(`/api/leads/${id}`)
   },
 }

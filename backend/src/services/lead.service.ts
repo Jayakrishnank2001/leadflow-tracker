@@ -13,6 +13,13 @@ export interface PaginatedLeads {
 }
 
 export async function createLead(input: CreateLeadInput): Promise<LeadDocument> {
+  const existing = await Lead.findOne({ email: input.email }).lean()
+  if (existing) {
+    throw new HttpError(409, 'A lead with this email already exists', {
+      email: 'A lead with this email already exists',
+    })
+  }
+
   const lead = new Lead(input)
   return lead.save()
 }
@@ -56,4 +63,12 @@ export async function updateLeadStatus(id: string, status: LeadStatus): Promise<
   }
 
   return lead
+}
+
+export async function deleteLead(id: string): Promise<void> {
+  const lead = await Lead.findByIdAndDelete(id)
+
+  if (!lead) {
+    throw new HttpError(404, 'Lead not found')
+  }
 }

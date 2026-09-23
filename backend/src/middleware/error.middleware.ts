@@ -12,12 +12,22 @@ interface MongooseCastError extends Error {
   name: 'CastError'
 }
 
+interface MongoDuplicateKeyError extends Error {
+  name: 'MongoServerError'
+  code?: number
+  keyValue?: Record<string, unknown>
+}
+
 function isMongooseValidationError(error: unknown): error is MongooseValidationError {
   return error instanceof Error && error.name === 'ValidationError'
 }
 
 function isMongooseCastError(error: unknown): error is MongooseCastError {
   return error instanceof Error && error.name === 'CastError'
+}
+
+function isMongoDuplicateKeyError(error: unknown): error is MongoDuplicateKeyError {
+  return error instanceof Error && error.name === 'MongoServerError' && (error as { code?: number }).code === 11000
 }
 
 /** Central error handler — must be registered after all routes. */
@@ -29,7 +39,18 @@ export function errorMiddleware(
   _next: NextFunction,
 ): void {
   if (error instanceof HttpError) {
-    res.status(error.statusCode).json({ message: error.message })
+    res.status(error.statusCode).json(
+      error.errors ? { message: error.message, errors: error.errors } : { message: error.message },
+    )
+    return
+  }
+
+  if (isMongoDuplicateKeyError(error)) {
+    const field = error.keyValue && typeof error.keyValue.email !== 'undefined' ? 'email' : undefined
+    const message = field === 'email' ? 'A lead with this email already exists' : 'Duplicate value'
+    res.status(409).json(
+      field ? { message, errors: { [field]: message } } : { message },
+    )
     return
   }
 
