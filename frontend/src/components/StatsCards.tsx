@@ -18,13 +18,18 @@ export function StatsCards({ leads, activeFilter, onSelectStatus }: StatsCardsPr
 
   return (
     <div className="stats-grid">
-      <div className="stat-card">
+      <button
+        type="button"
+        className={`stat-card status-card ${activeFilter === 'All statuses' ? 'selected' : ''}`}
+        onClick={() => onSelectStatus('All statuses')}
+        aria-pressed={activeFilter === 'All statuses'}
+      >
         <div className="stat-icon blue">
           <Users size={18} />
         </div>
         <span>Total leads</span>
         <strong>{leads.length}</strong>
-      </div>
+      </button>
       {LEAD_STATUSES.map((status) => (
         <button
           key={status}

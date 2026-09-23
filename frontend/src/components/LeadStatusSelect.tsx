@@ -2,10 +2,10 @@ import { CustomSelect } from '@/components/CustomSelect'
 import { LEAD_STATUSES, type LeadStatus } from '@/types/lead'
 
 const STATUS_STYLES: Record<LeadStatus, string> = {
-  New: 'bg-sky-50 text-sky-700 ring-sky-200',
-  Contacted: 'bg-amber-50 text-amber-700 ring-amber-200',
-  Qualified: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  Converted: 'bg-teal-50 text-teal-700 ring-teal-200',
+  New: 'bg-sky-100 text-sky-700',
+  Contacted: 'bg-amber-100 text-amber-700',
+  Qualified: 'bg-emerald-100 text-emerald-700',
+  Converted: 'bg-teal-100 text-teal-700',
 }
 
 interface LeadStatusSelectProps {

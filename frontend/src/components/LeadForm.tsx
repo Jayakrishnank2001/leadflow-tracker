@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CustomSelect } from '@/components/CustomSelect'
 import { ApiError } from '@/lib/api'
 import { LEAD_STATUSES, type CreateLeadInput, type LeadStatus } from '@/types/lead'
 
@@ -145,14 +146,12 @@ export function LeadForm({ open, onClose, onSubmit }: LeadFormProps) {
           </label>
           <label>
             Status
-            <select
+            <CustomSelect
               value={form.status}
-              onChange={(event) => setForm({ ...form, status: event.target.value as LeadStatus })}
-            >
-              {LEAD_STATUSES.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
+              options={LEAD_STATUSES}
+              onChange={(value) => setField('status', value as LeadStatus)}
+              ariaLabel="Lead status"
+            />
             {errors.status && <span className="field-error">{errors.status}</span>}
           </label>
           <div className="dialog-actions">

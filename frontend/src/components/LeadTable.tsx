@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { MoreHorizontal, Trash2 } from 'lucide-react'
 import { LeadStatusSelect } from '@/components/LeadStatusSelect'
 import type { Lead, LeadStatus } from '@/types/lead'
@@ -11,6 +12,30 @@ interface LeadTableProps {
 }
 
 export function LeadTable({ leads, openMenuId, onToggleMenu, onUpdateStatus, onDeleteLead }: LeadTableProps) {
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Close the delete menu on outside click / Escape. Status selects handle
+  // their own outside-click, so no cross-component signal is needed.
+  useEffect(() => {
+    if (openMenuId === null) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        onToggleMenu(null)
+      }
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onToggleMenu(null)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [openMenuId, onToggleMenu])
+
   return (
     <table>
       <thead>
@@ -44,10 +69,11 @@ export function LeadTable({ leads, openMenuId, onToggleMenu, onUpdateStatus, onD
             </td>
             <td className="created-cell">{lead.createdAt}</td>
             <td className="menu-cell">
-              <div className="lead-menu-wrap">
+              <div className="lead-menu-wrap" ref={openMenuId === lead.id ? menuRef : undefined}>
                 <button
                   className="row-menu"
                   aria-label={`Actions for ${lead.name}`}
+                  aria-expanded={openMenuId === lead.id}
                   onClick={() => onToggleMenu(openMenuId === lead.id ? null : lead.id)}
                 >
                   <MoreHorizontal size={18} />
