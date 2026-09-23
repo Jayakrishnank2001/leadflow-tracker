@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { API_BASE_URL } from '@/lib/api'
 import { leadService } from '@/services/lead.service'
 import { jsonResponse, stubFetch } from '@/test/http'
 
@@ -36,7 +37,7 @@ describe('leadService', () => {
 
     await leadService.list({ search: '   ', status: 'All statuses' })
 
-    expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:5000/api/leads')
+    expect(fetchMock.mock.calls[0][0]).toBe(`${API_BASE_URL}/api/leads`)
   })
 
   it('builds the query string for search, status and pagination', async () => {
@@ -45,7 +46,7 @@ describe('leadService', () => {
     await leadService.list({ search: 'ada lovelace', status: 'Qualified', page: 2, limit: 5 })
 
     expect(fetchMock.mock.calls[0][0]).toBe(
-      'http://localhost:5000/api/leads?search=ada+lovelace&status=Qualified&page=2&limit=5',
+      `${API_BASE_URL}/api/leads?search=ada+lovelace&status=Qualified&page=2&limit=5`,
     )
   })
 
@@ -55,7 +56,7 @@ describe('leadService', () => {
 
     const created = await leadService.create(input)
 
-    expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:5000/api/leads')
+    expect(fetchMock.mock.calls[0][0]).toBe(`${API_BASE_URL}/api/leads`)
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'POST', body: JSON.stringify(input) })
     expect(created.id).toBe(rawLead._id)
   })
@@ -65,7 +66,7 @@ describe('leadService', () => {
 
     const updated = await leadService.updateStatus(rawLead._id, 'Qualified')
 
-    expect(fetchMock.mock.calls[0][0]).toBe(`http://localhost:5000/api/leads/${rawLead._id}/status`)
+    expect(fetchMock.mock.calls[0][0]).toBe(`${API_BASE_URL}/api/leads/${rawLead._id}/status`)
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'PATCH', body: JSON.stringify({ status: 'Qualified' }) })
     expect(updated.status).toBe('Qualified')
   })
@@ -75,7 +76,7 @@ describe('leadService', () => {
 
     await leadService.remove(rawLead._id)
 
-    expect(fetchMock.mock.calls[0][0]).toBe(`http://localhost:5000/api/leads/${rawLead._id}`)
+    expect(fetchMock.mock.calls[0][0]).toBe(`${API_BASE_URL}/api/leads/${rawLead._id}`)
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'DELETE' })
   })
 })

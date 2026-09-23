@@ -5,7 +5,12 @@ import leadRoutes from './routes/lead.routes.js'
 
 const app = express()
 
-app.use(cors())
+// Comma-separated allow-list (deployed frontend + local dev). Unset → allow any origin.
+const corsOrigins = process.env.CORS_ORIGIN?.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
+app.use(cors(corsOrigins && corsOrigins.length > 0 ? { origin: corsOrigins } : undefined))
 app.use(express.json())
 
 app.get('/api/health', (_req, res) => {

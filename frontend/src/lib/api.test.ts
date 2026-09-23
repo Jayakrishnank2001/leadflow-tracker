@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, api } from '@/lib/api'
+import { API_BASE_URL, ApiError, api } from '@/lib/api'
 import { jsonResponse, stubFetch, unparsableResponse } from '@/test/http'
 
 describe('api', () => {
@@ -11,7 +11,7 @@ describe('api', () => {
     const fetchMock = stubFetch(jsonResponse({ ok: true }))
 
     await expect(api.get('/api/health')).resolves.toEqual({ ok: true })
-    expect(fetchMock).toHaveBeenCalledWith('http://localhost:5000/api/health', {
+    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/api/health`, {
       headers: { 'Content-Type': 'application/json' },
     })
   })
@@ -28,7 +28,7 @@ describe('api', () => {
     await api.patch('/api/leads/1/status', { status: 'New' })
 
     expect(fetchMock).toHaveBeenCalledWith(
-      'http://localhost:5000/api/leads/1/status',
+      `${API_BASE_URL}/api/leads/1/status`,
       expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ status: 'New' }) }),
     )
   })
