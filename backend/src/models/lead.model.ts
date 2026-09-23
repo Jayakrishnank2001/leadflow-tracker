@@ -1,4 +1,4 @@
-import { Document, Model, Schema, model, models } from 'mongoose'
+import mongoose, { Document, Model, Schema } from 'mongoose'
 
 export type LeadStatus = 'New' | 'Contacted' | 'Qualified' | 'Converted'
 
@@ -26,6 +26,6 @@ const leadSchema = new Schema<LeadDocument>(
 )
 
 export const Lead: Model<LeadDocument> =
-  models.Lead ?? model<LeadDocument>('Lead', leadSchema)
+  mongoose.models.Lead ?? mongoose.model<LeadDocument>('Lead', leadSchema)
 
 export default Lead
